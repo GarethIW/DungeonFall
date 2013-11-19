@@ -60,10 +60,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="data\img\chest.png" />
+    <Content Include="data\img\floatfont.png" />
     <Content Include="data\img\font2.png" />
     <Content Include="data\img\hero.png" />
     <Content Include="data\img\hudbg.png" />
     <Content Include="data\img\mob0.png" />
+    <Content Include="data\img\placeholder.png" />
     <Content Include="data\img\tiles.png" />
     <Content Include="data\map\basedungeon.xml" />
     <Content Include="index.css" />
