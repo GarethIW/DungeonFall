@@ -22,6 +22,15 @@ game.Hero = me.ObjectEntity.extend({
     attackCooldown: 0,
     attackCooldownTarget: 2000,
 
+    Level: 1,
+    XP: 0,
+    XPTNL: 100,
+    DRMin: 0,
+    DRMax: 1,
+    SRMin: 0,
+    SRMax: 1,
+    HP: 10,
+
     init: function (x, y, settings) {
         // call the constructor
         settings.spritewidth = 32;
@@ -66,12 +75,29 @@ game.Hero = me.ObjectEntity.extend({
 
     scanX: 0,
     scanY: 0,
+    lastKnownGoodX: 0,
+    lastKnownGoodY: 0,
     update: function () {
         var dungeon = me.game.world.getEntityByProp("name", "dungeon")[0];
         var mobs = me.game.world.getEntityByProp("name", "mob");
 
         var tx = Math.floor(this.pos.x / 32);
         var ty = Math.floor(this.pos.y / 32);
+
+        if (tx > 0) this.lastKnownGoodX = tx;
+        if (ty > 0) this.lastKnownGoodY = ty;
+
+        // Attempt to keep the hero in check on Chrome!
+        if (!this.isEntering) {
+            if (Math.abs(this.target.x - this.pos.x) > 32 || Math.abs(this.target.y - this.pos.y) > 32) {
+                this.walkTween.stop();
+                this.isTravelling = false;
+                this.pos.x = this.lastKnownGoodX;
+                this.pos.y = this.lastKnownGoodY;
+                this.target.x = this.pos.x;
+                this.target.y = this.pos.y;
+            }
+        }
 
         this.isInCombat = false;
         for (var i = 0; i < mobs.length; i++) {
