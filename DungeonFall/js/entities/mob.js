@@ -20,9 +20,9 @@ game.Mob = me.ObjectEntity.extend({
 
     Level: 1,
     DRMin: 0,
-    DRMax: 1,
+    DRMax: 0,
     SRMin: 0,
-    SRMax: 1,
+    SRMax: 0,
     HP: 1,
 
     init: function (x, y, settings) {
@@ -80,7 +80,7 @@ game.Mob = me.ObjectEntity.extend({
                     break;
             }
         }
-        this.DRMin = this.Level - 1;
+        //this.DRMin = this.Level - 1;
         this.SRMin = this.Level - 1;
 
 
@@ -154,6 +154,8 @@ game.Mob = me.ObjectEntity.extend({
             this.die();
             hero.XP += this.Level * 10;
             game.HUD.addFloatyText(new me.Vector2d(hero.pos.x + 3 + Math.floor(Math.random() * 16), hero.pos.y), (this.Level * 10) + "XP", "blue");
+            game.HUD.addLine("Hero gains " + this.Level * 10 + " experience!");
+
         }
 
         return true;
@@ -190,7 +192,7 @@ game.Mob = me.ObjectEntity.extend({
         }
         else {
             if (totaldam > 0) {
-                report += " and hits for " + totaldam;
+                report += " and hits for " + totaldam + "!";
                 game.HUD.addFloatyText(new me.Vector2d(this.pos.x + 3 + Math.floor(Math.random() * 16), this.pos.y), totaldam, "red");
                 this.HP -= totaldam;
             }

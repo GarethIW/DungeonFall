@@ -24,11 +24,12 @@ game.Hero = me.ObjectEntity.extend({
 
     Level: 1,
     XP: 0,
-    XPTNL: 100,
+    XPTNL: 50,
     DRMin: 0,
     DRMax: 1,
     SRMin: 0,
     SRMax: 1,
+    HPMax: 5,
     HP: 5,
 
     init: function (x, y, settings) {
@@ -194,6 +195,15 @@ game.Hero = me.ObjectEntity.extend({
 
         this.parent();
        
+        if (this.XP >= this.XPTNL) {
+            this.Level++;
+            this.XPTNL = 50 + (50 * this.Level);
+            this.HPMax += this.Level;
+            this.HP = this.HPMax;
+            game.HUD.addFloatyText(new me.Vector2d((this.pos.x - 50) + Math.floor(Math.random() * 16), this.pos.y - 16), "Level Up!", "gold");
+            game.HUD.addLine("Hero is now level " + this.Level + "!");
+        }
+
         return true;
     },
 
