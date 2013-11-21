@@ -60,7 +60,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="data\img\chest.png" />
-    <Content Include="data\img\floatfont.png" />
+    <Content Include="data\img\floatfont-green.png" />
+    <Content Include="data\img\floatfont-white.png" />
+    <Content Include="data\img\floatfont-red.png" />
     <Content Include="data\img\font2.png" />
     <Content Include="data\img\hero.png" />
     <Content Include="data\img\hudbg.png" />

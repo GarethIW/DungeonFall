@@ -29,7 +29,7 @@ game.Hero = me.ObjectEntity.extend({
     DRMax: 1,
     SRMin: 0,
     SRMax: 1,
-    HP: 10,
+    HP: 5,
 
     init: function (x, y, settings) {
         // call the constructor
@@ -202,18 +202,41 @@ game.Hero = me.ObjectEntity.extend({
 
         this.attackCooldown = me.timer.getTime();
 
-        game.HUD.addLine("Hero attacks " + mob.mobName);
         mob.attackedBy(this);
     },
 
     attackedBy: function (attacker) {
-        game.HUD.addLine("Hero is attacked by " + attacker.mobName);
-        game.HUD.addFloatyText(new me.Vector2d(this.pos.x + 3 + Math.floor(Math.random() * 16), this.pos.y), "1");
         if (!this.isInCombat) {
             this.attackCooldown = me.timer.getTime() + (Math.random() * 2000);
-            game.HUD.addFloatyText(new me.Vector2d((this.pos.x - 40) + Math.floor(Math.random() * 16), this.pos.y-16), "Stunned!");
+            game.HUD.addFloatyText(new me.Vector2d((this.pos.x - 40) + Math.floor(Math.random() * 16), this.pos.y - 16), "Stunned!", "red");
         }
         this.isInCombat = true;
+
+        var dam = attacker.DRMin + Math.floor(Math.random() * ((attacker.DRMax + 1) - attacker.DRMin));
+        var sav = this.SRMin + Math.floor(Math.random() * ((this.SRMax + 1) - this.SRMin));
+
+        var totaldam = dam - sav;
+
+        var report = attacker.mobName + " attacks Hero";
+
+        if (dam == 0) {
+            report += " but misses!";
+            game.HUD.addFloatyText(new me.Vector2d((attacker.pos.x - 20) + Math.floor(Math.random() * 16), attacker.pos.y), "Miss!", "white");
+        }
+        else {
+            if (totaldam > 0) {
+                report += " and hits for " + totaldam;
+                game.HUD.addFloatyText(new me.Vector2d(this.pos.x + 3 + Math.floor(Math.random() * 16), this.pos.y), totaldam, "red");
+                this.HP -= totaldam;
+            }
+            else {
+                report = "Hero defends " + attacker.mobName + "'s attack!";
+                game.HUD.addFloatyText(new me.Vector2d((this.pos.x - 30) + Math.floor(Math.random() * 16), this.pos.y), "Defend!", "green");
+
+            }
+        }
+
+        game.HUD.addLine(report);
     },
 
     explore: function (tx, ty, path) {
