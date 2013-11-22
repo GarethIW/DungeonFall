@@ -124,14 +124,15 @@ game.FallingPiece = me.ObjectContainer.extend({
                         }
 
                         // Chests
-                        ran = Math.floor(Math.random() * (100 - dungeon.highestUsedColumn));
+                        ran = Math.floor(Math.random() * (100 - (dungeon.Level * 5) - dungeon.highestUsedColumn));
+                        if (ran < 0) ran = 0;
                         if (ran == 0 && !chestPlaced) {
                             this.Tiles[x][y] = PieceHelper.CHEST_TILE;
                             chestPlaced = true;
                         }
 
                         // Mobs (placement will be determined by hero's level i guess)
-                        ran = Math.floor(Math.random() * (20));
+                        ran = Math.floor(Math.random() * (20 - (dungeon.Level/2)));
                         if (ran == 0 && !mobPlaced) {
                             this.Tiles[x][y] = PieceHelper.MIN_MOB_TILE;
                             mobPlaced = true;

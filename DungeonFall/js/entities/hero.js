@@ -11,7 +11,9 @@ game.Hero = me.ObjectEntity.extend({
     DiscoveredTiles: new Array(35),
     target: new me.Vector2d(0, 0),
     walkTween: null,
+    walkSpeed: 3,
     isTravelling: false,
+    isResting: false,
     isFollowingPath: false,
     currentPath: null,
     currentPathStep: 0,
@@ -22,6 +24,9 @@ game.Hero = me.ObjectEntity.extend({
     attackCooldown: 0,
     attackCooldownTarget: 2000,
 
+    statsTick: 0,
+    statsTickTarget: 1000,
+
     Level: 1,
     XP: 0,
     XPTNL: 50,
@@ -29,8 +34,8 @@ game.Hero = me.ObjectEntity.extend({
     DRMax: 1,
     SRMin: 0,
     SRMax: 1,
-    HPMax: 5,
-    HP: 5,
+    HPMax: 10,
+    HP: 10,
 
     init: function (x, y, settings) {
         // call the constructor
@@ -66,9 +71,9 @@ game.Hero = me.ObjectEntity.extend({
             }
         }
 
-        this.walkTween = new me.Tween(this.pos).to(this.target, 2000).onComplete(this.targetReached.bind(this));
-        this.walkTween.easing(me.Tween.Easing.Linear.None);
-        this.walkTween.start();
+        //this.walkTween = new me.Tween(this.pos).to(this.target, 2000).onComplete(this.targetReached.bind(this));
+        //this.walkTween.easing(me.Tween.Easing.Linear.None);
+        //this.walkTween.start();
         this.isTravelling = true;
 
         game.HUD.addLine("The Hero has arrived in the dungeon");
@@ -76,8 +81,8 @@ game.Hero = me.ObjectEntity.extend({
 
     scanX: 0,
     scanY: 0,
-    lastKnownGoodX: 0,
-    lastKnownGoodY: 0,
+    //lastKnownGoodX: 0,
+    //lastKnownGoodY: 0,
     update: function () {
         var dungeon = me.game.world.getEntityByProp("name", "dungeon")[0];
         var mobs = me.game.world.getEntityByProp("name", "mob");
@@ -85,19 +90,34 @@ game.Hero = me.ObjectEntity.extend({
         var tx = Math.floor(this.pos.x / 32);
         var ty = Math.floor(this.pos.y / 32);
 
-        if (tx > 0) this.lastKnownGoodX = tx;
-        if (ty > 0) this.lastKnownGoodY = ty;
+        if (this.stairsFound!=null && !this.isFollowingPath && dungeon.isComplete && tx == this.stairsFound.x && ty == this.stairsFound.y) {
+            me.game.viewport.fadeIn("#000000", 3000, this.nextLevel);
+            this.updateMovement();
+            this.parent();
+            return true;
+        }
+
+        //if (tx > 0) this.lastKnownGoodX = tx;
+        //if (ty > 0) this.lastKnownGoodY = ty;
 
         // Attempt to keep the hero in check on Chrome!
-        if (!this.isEntering) {
-            if (Math.abs(this.target.x - this.pos.x) > 32 || Math.abs(this.target.y - this.pos.y) > 32) {
-                this.walkTween.stop();
-                this.isTravelling = false;
-                this.pos.x = this.lastKnownGoodX;
-                this.pos.y = this.lastKnownGoodY;
-                this.target.x = this.pos.x;
-                this.target.y = this.pos.y;
-            }
+        //if (!this.isEntering) {
+        //    if (Math.abs(this.target.x - this.pos.x) > 32 || Math.abs(this.target.y - this.pos.y) > 32) {
+        //        this.walkTween.stop();
+        //        this.isTravelling = false;
+        //        this.pos.x = this.lastKnownGoodX;
+        //        this.pos.y = this.lastKnownGoodY;
+        //        this.target.x = this.pos.x;
+        //        this.target.y = this.pos.y;
+        //    }
+        //}
+
+        if (this.isTravelling) {
+            if (this.target.x > this.pos.x) this.pos.x+=this.walkSpeed;
+            if (this.target.x < this.pos.x) this.pos.x -= this.walkSpeed;
+            if (this.target.y > this.pos.y) this.pos.y += this.walkSpeed;
+            if (this.target.y < this.pos.y) this.pos.y -= this.walkSpeed;
+            if (this.pos.x < this.target.x + this.walkSpeed && this.pos.x > this.target.x - this.walkSpeed && this.pos.y < this.target.y + this.walkSpeed && this.pos.y > this.target.y - this.walkSpeed) this.targetReached();
         }
 
         this.isInCombat = false;
@@ -108,7 +128,30 @@ game.Hero = me.ObjectEntity.extend({
             if (((mx == tx - 1 || mx == tx + 1) && my == ty) ||
                 ((my == ty - 1 || my == ty + 1) && mx == tx)) {
                 this.isInCombat = true;
+                this.statsTick = me.timer.getTime() + 2000;
                 this.attack(mob);
+            }
+        }
+
+        if (!this.isInCombat) {
+            //Tick health if not fighting
+            if (me.timer.getTime() > this.statsTick + this.statsTickTarget) {
+                this.statsTick = me.timer.getTime();
+                if (this.HP < this.HPMax) {
+                    this.HP++;
+                    game.HUD.addFloatyText(new me.Vector2d((this.pos.x + 3) + Math.floor(Math.random() * 16), this.pos.y), "1", "green");
+                    
+
+                }
+            }
+
+            if (this.HP <= (this.HPMax / 2) && !this.isResting) {
+                this.isResting = true;
+                game.HUD.addLine("Hero is resting...");
+            }
+            else if (this.isResting) {
+                game.HUD.addLine("Hero stops resting");
+                this.isResting = false;
             }
         }
 
@@ -146,44 +189,78 @@ game.Hero = me.ObjectEntity.extend({
             }
         }
 
-        if (!this.isTravelling && !this.isFollowingPath) {
+        if (!this.isInCombat && !this.isResting) {
 
-            for (var i = 0; i < me.game.world.getEntityByProp("name", "chest").length; i++) {
-                var chest = me.game.world.getEntityByProp("name", "chest")[i];
-                if (!chest.isOpen) {
-                    var cx = Math.floor(chest.pos.x/32);
-                    var cy = Math.floor(chest.pos.y/32);
-                    var path = dungeon.findPath(dungeon.pathGridMobs, tx, ty, cx, cy);
-                    if (path.length > 0) {
-                        this.explore(cx, cy,path);
-                    }
-                }
-            }
-        }
-        
-        for(this.scanY=1;this.scanY<this.DUNGEON_HEIGHT-2;this.scanY++)
-        {
             if (!this.isTravelling && !this.isFollowingPath) {
-                if (this.DiscoveredTiles[this.scanX][this.scanY] == 0) {
-                    var path = dungeon.findPath(dungeon.pathGridMobs, tx, ty, this.scanX,this.scanY);
-                    if (path.length > 0) {
-                        this.explore(tx, ty,path);
+                for (var i = 0; i < me.game.world.getEntityByProp("name", "chest").length; i++) {
+                    var chest = me.game.world.getEntityByProp("name", "chest")[i];
+                    if (!chest.isOpen) {
+                        var cx = Math.floor(chest.pos.x / 32);
+                        var cy = Math.floor(chest.pos.y / 32);
+                        var path = dungeon.findPath(dungeon.pathGridMobs, tx, ty, cx, cy);
+                        if (path.length > 0) {
+                            this.explore(cx, cy, path);
+                        }
                     }
                 }
             }
-            
 
-            if (dungeon.Tiles[this.scanX][this.scanY] == PieceHelper.STAIRS_TILE) {
-                var path = dungeon.findPath(dungeon.pathGrid, tx, ty, this.scanX,this.scanY);
-                if (path.length > 0) {
-                    dungeon.stairsOK = true;
-                } else {
-                    dungeon.stairsOK = false;
+            if (!this.isTravelling && !this.isFollowingPath && this.HP >= this.HPMax * 0.8) {
+                for (var i = 0; i < me.game.world.getEntityByProp("name", "mob").length; i++) {
+                    var mob = me.game.world.getEntityByProp("name", "mob")[i];
+                    if (mob.Level<=this.Level) {
+                        var cx = Math.floor(mob.pos.x / 32);
+                        var cy = Math.floor(mob.pos.y / 32);
+                        var path = dungeon.findPath(dungeon.pathGrid, tx, ty, cx, cy);
+                        if (path.length > 0) {
+                            this.explore(cx, cy, path);
+                        }
+                    }
+                }
+                for (var i = 0; i < me.game.world.getEntityByProp("name", "mob").length; i++) {
+                    var mob = me.game.world.getEntityByProp("name", "mob")[i];
+                    if (mob.Level > this.Level && this.HP == this.HPMax) {
+                        var cx = Math.floor(mob.pos.x / 32);
+                        var cy = Math.floor(mob.pos.y / 32);
+                        var path = dungeon.findPath(dungeon.pathGrid, tx, ty, cx, cy);
+                        if (path.length > 0) {
+                            this.explore(cx, cy, path);
+                        }
+                    }
                 }
             }
-        }
-        
 
+            for (this.scanY = 1; this.scanY < this.DUNGEON_HEIGHT - 2; this.scanY++) {
+                if (!this.isTravelling && !this.isFollowingPath) {
+                    if (this.DiscoveredTiles[this.scanX][this.scanY] == 0) {
+                        var path = dungeon.findPath(dungeon.pathGridMobs, tx, ty, this.scanX, this.scanY);
+                        if (path.length > 0) {
+                            this.explore(tx, ty, path);
+                        }
+                    }
+                }
+
+
+                if (!this.isTravelling && !this.isFollowingPath && dungeon.Tiles[this.scanX][this.scanY] == PieceHelper.STAIRS_TILE) {
+                    var path = dungeon.findPath(dungeon.pathGrid, tx, ty, this.scanX, this.scanY);
+                    if (path.length > 0) {
+                        dungeon.stairsOK = true;
+                    } else {
+                        dungeon.stairsOK = false;
+                    }
+                }
+            }
+
+            if (this.stairsFound != null) {
+                if (!this.isTravelling && !this.isFollowingPath && dungeon.isComplete && dungeon.stairsOK) {
+                    var path = dungeon.findPath(dungeon.pathGrid, tx, ty, this.stairsFound.x, this.stairsFound.y);
+                    if (path.length > 0) this.explore(tx, ty, path);
+                }
+
+                
+            }
+
+        }
         
         this.scanX++;
         if (this.scanX == this.DUNGEON_WIDTH - 1) {
@@ -200,7 +277,7 @@ game.Hero = me.ObjectEntity.extend({
             this.XPTNL = 50 + (50 * this.Level);
             this.HPMax += this.Level;
             this.HP = this.HPMax;
-            game.HUD.addFloatyText(new me.Vector2d((this.pos.x - 50) + Math.floor(Math.random() * 16), this.pos.y - 16), "Level Up!", "gold");
+            game.HUD.addFloatyText(new me.Vector2d((this.pos.x - 50) + Math.floor(Math.random() * 16), this.pos.y - 16), "Level Up!", "gold", 2);
             game.HUD.addLine("Hero is now level " + this.Level + "!");
         }
 
@@ -254,16 +331,22 @@ game.Hero = me.ObjectEntity.extend({
         this.currentPath = path;
         this.currentPathStep = 0;
         this.target = new me.Vector2d((this.currentPath[this.currentPathStep].x * 32), (this.currentPath[this.currentPathStep].y * 32));
-        this.walkTween = new me.Tween(this.pos).to(this.target, 200).onComplete(this.targetReached.bind(this));
-        this.walkTween.easing(me.Tween.Easing.Linear.None);
-        this.walkTween.start();
+        //this.walkTween = new me.Tween(this.pos).to(this.target, 200).onComplete(this.targetReached.bind(this));
+        //this.walkTween.easing(me.Tween.Easing.Linear.None);
+        //this.walkTween.start();
         this.isTravelling = true;
         this.isFollowingPath = true;
-        if (path.length > 3) game.HUD.addLine("The Hero is exploring...");
+        if (path.length > 10) game.HUD.addLine("The Hero is exploring...");
     },
 
     targetReached: function () {
         var dungeon = me.game.world.getEntityByProp("name", "dungeon")[0];
+
+        this.pos.x = this.target.x;
+        this.pos.y = this.target.y;
+
+        var tx = Math.floor(this.pos.x / 32);
+        var ty = Math.floor(this.pos.y / 32);
 
         if (this.isEntering) {
             this.isEntering = false;
@@ -277,13 +360,13 @@ game.Hero = me.ObjectEntity.extend({
         this.isTravelling = false;
         if (this.isFollowingPath) {
             if (this.currentPathStep < this.currentPath.length - 1) {
-                var path = dungeon.findPath(dungeon.pathGrid, this.pos.x / 32, this.pos.y / 32, this.currentPath[this.currentPath.length - 1].x, this.currentPath[this.currentPath.length - 1].y);
+                var path = dungeon.findPath(dungeon.pathGrid, tx, ty, this.currentPath[this.currentPath.length - 1].x, this.currentPath[this.currentPath.length - 1].y);
                 if (path.length > 0) {
                     this.currentPathStep++;
                     this.target = new me.Vector2d((this.currentPath[this.currentPathStep].x * 32), (this.currentPath[this.currentPathStep].y * 32));
-                    this.walkTween = new me.Tween(this.pos).to(this.target, 200).onComplete(this.targetReached.bind(this));
-                    this.walkTween.easing(me.Tween.Easing.Linear.None);
-                    this.walkTween.start();
+                    //this.walkTween = new me.Tween(this.pos).to(this.target, 200).onComplete(this.targetReached.bind(this));
+                    //this.walkTween.easing(me.Tween.Easing.Linear.None);
+                    //this.walkTween.start();
                     this.isTravelling = true;
                 } else {
                     this.isFollowingPath = false;
@@ -311,7 +394,12 @@ game.Hero = me.ObjectEntity.extend({
 
     reset: function () {
 
-        this.init(this.spawnPosition.x, this.spawnPosition.y, { image: "girl" });
+    },
+
+    nextLevel: function () {
+        game.Level++;
+        me.game.reset();
+
     }
 
 });

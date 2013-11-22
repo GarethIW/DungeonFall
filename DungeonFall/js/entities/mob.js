@@ -24,6 +24,7 @@ game.Mob = me.ObjectEntity.extend({
     SRMin: 0,
     SRMax: 0,
     HP: 1,
+    HPMax: 1,
 
     init: function (x, y, settings) {
         // call the constructor
@@ -70,7 +71,7 @@ game.Mob = me.ObjectEntity.extend({
             var r = Math.floor(Math.random() * 3);
             switch (r) {
                 case 0:
-                    this.HP++;
+                    this.HPMax++;
                     break;
                 case 1:
                     this.DRMax++;
@@ -82,7 +83,7 @@ game.Mob = me.ObjectEntity.extend({
         }
         //this.DRMin = this.Level - 1;
         this.SRMin = this.Level - 1;
-
+        this.HP = this.HPMax;
 
         //this.walkTween = new me.Tween(this.pos).to(this.target, 100).onComplete(this.targetReached.bind(this));
         //this.walkTween.easing(me.Tween.Easing.Linear.None);
@@ -152,9 +153,10 @@ game.Mob = me.ObjectEntity.extend({
 
         if (this.HP <= 0) {
             this.die();
-            hero.XP += this.Level * 10;
-            game.HUD.addFloatyText(new me.Vector2d(hero.pos.x + 3 + Math.floor(Math.random() * 16), hero.pos.y), (this.Level * 10) + "XP", "blue");
-            game.HUD.addLine("Hero gains " + this.Level * 10 + " experience!");
+            var reward = (this.Level * 10) + this.HPMax;
+            hero.XP += reward;
+            game.HUD.addFloatyText(new me.Vector2d(hero.pos.x + 3 + Math.floor(Math.random() * 16), hero.pos.y), reward + "XP", "blue", 1.5);
+            game.HUD.addLine("Hero gains " + reward + " experience!");
 
         }
 
