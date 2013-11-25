@@ -65,8 +65,13 @@ game.Mob = me.ObjectEntity.extend({
 
         this.z = 3;
 
+        // Choose level
+        var hero = me.game.world.getEntityByProp("name", "hero")[0];
+        this.Level = (game.Level-1) + (hero.Level + (Math.floor(Math.random() * 3)-1))
+
         // Distribute stats
-        var points = this.Level * 3;
+
+        var points = this.Level * 2;
         for (var i = 0; i < points; i++) {
             var r = Math.floor(Math.random() * 3);
             switch (r) {
@@ -82,7 +87,7 @@ game.Mob = me.ObjectEntity.extend({
             }
         }
         //this.DRMin = this.Level - 1;
-        this.SRMin = this.Level - 1;
+        //this.SRMin = this.Level - 1;
         this.HP = this.HPMax;
 
         //this.walkTween = new me.Tween(this.pos).to(this.target, 100).onComplete(this.targetReached.bind(this));
@@ -153,7 +158,7 @@ game.Mob = me.ObjectEntity.extend({
 
         if (this.HP <= 0) {
             this.die();
-            var reward = (this.Level * 10) + this.HPMax;
+            var reward = ((this.Level+ this.HPMax) * (game.Level * 2));
             hero.XP += reward;
             game.HUD.addFloatyText(new me.Vector2d(hero.pos.x + 3 + Math.floor(Math.random() * 16), hero.pos.y), reward + "XP", "blue", 1.5);
             game.HUD.addLine("Hero gains " + reward + " experience!");

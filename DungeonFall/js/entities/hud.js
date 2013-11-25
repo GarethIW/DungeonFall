@@ -38,9 +38,9 @@ game.HUD.Container = me.ObjectContainer.extend({
 
         for(var i=0;i<7;i++) game.HUD.addLine("");
 
-        this.font = new me.BitmapFont("font", { x: 32, y: 32 }, 0.5);
-        this.font.alignText = "top";
-
+        this.font = new me.BitmapFont("font", { x: 32, y: 32 }, 0.8);
+        this.font.alignText = "center";
+        this.floating = true;
 
 
         this.alwaysUpdate = true;
@@ -51,9 +51,9 @@ game.HUD.Container = me.ObjectContainer.extend({
         try {
             var hero = me.game.world.getEntityByProp("name", "hero")[0];
 
-            this.font.draw(context, "Level " + hero.Level + " Hero", 10, 610);
-            this.font.draw(context, "HP: " + hero.HP + "/" + hero.HPMax + " Dam:" + hero.DRMax + " Def: " + hero.SRMax, 10, 628);
-            this.font.draw(context, "XP " + hero.XP + "/" + hero.XPTNL, 10, 646);
+            this.font.draw(context, hero.Level, 21, 630);
+            //this.font.draw(context, "HP: " + hero.HP + "/" + hero.HPMax + " Dam:" + hero.DRMax + " Def: " + hero.SRMax, 10, 628);
+            //this.font.draw(context, "XP " + hero.XP + "/" + hero.XPTNL, 10, 646);
 
         }
         catch (e) { }
@@ -130,7 +130,7 @@ game.HUD.TextWindow = me.ObjectContainer.extend({
     init: function (x, y) {
         this.parent(x,y,620,128);
 
-        this.font = new me.BitmapFont("font", { x: 32, y:32 }, 0.5);
+        this.font = new me.BitmapFont("textfont", { x: 21, y:22 }, 0.8);
         this.font.alignText = "top";
 
         this.floating = true;
