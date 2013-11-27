@@ -26,7 +26,7 @@ game.HUD.Container = me.ObjectContainer.extend({
         this.collidable = false;
 
         // make sure our object is always draw first
-        this.z = -1;
+        this.z = 999;
 
         // give a name
         this.name = "HUD";
@@ -72,6 +72,9 @@ game.HUD.Container = me.ObjectContainer.extend({
             var hero = me.game.world.getEntityByProp("name", "hero")[0];
 
             this.font.draw(context, hero.Level, 35, 630);
+
+            this.font.draw(context, "Floor "+game.Level, me.game.viewport.width/2, 4);
+
 
             context.strokeStyle = "silver";
             context.strokeRect(70, 618, 410, 26);
@@ -121,6 +124,11 @@ game.HUD.FloatyTextContainer = me.ObjectContainer.extend({
         this.alwaysUpdate = true;
     },
 
+    clear: function() {
+        for (var i = this.children.length, obj; i--, obj = this.children[i];) {
+                this.removeChild(obj);
+        }
+    }
 
 });
 

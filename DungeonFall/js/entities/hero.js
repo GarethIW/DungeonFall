@@ -200,14 +200,16 @@ game.Hero = me.ObjectEntity.extend({
 
         for (var x = tx-1; x <= tx+1; x++) {
             for (var y = ty - 1; y <= ty + 1; y++) {
-                if (x >= 1 && y >= 1 && x <= this.DUNGEON_WIDTH - 1 && y <= this.DUNGEON_HEIGHT - 2  && this.DiscoveredTiles[x][y]!=1) {
+                if (x >= 1 && y >= 1 && x <= this.DUNGEON_WIDTH - 1 && y <= this.DUNGEON_HEIGHT - 2) {
+                    if (this.DiscoveredTiles[x][y] != 1) this.XP += (game.Level / 5);
                     this.DiscoveredTiles[x][y] = 1;
-                    this.XP+=(game.Level/5);
-                    if (dungeon.Tiles[x][y] == PieceHelper.STAIRS_TILE && this.stairsFound == null) {
+                    if (dungeon.Tiles[x][y] == PieceHelper.STAIRS_TILE) {
+                        if (this.stairsFound == null) {
+                            game.HUD.addLine("Hero found stairs to floor " + (game.Level + 1));
+                            game.HUD.addLine("...and will remember their location");
+                        }
                         this.stairsFound = new me.Vector2d(x, y);
                         dungeon.stairsOK = true;
-                        game.HUD.addLine("Hero found stairs to floor " + (game.Level+1));
-                        game.HUD.addLine("...and will remember their location");
                     }
                 }
             }
@@ -231,7 +233,7 @@ game.Hero = me.ObjectEntity.extend({
                 var path = dungeon.findPath(dungeon.pathGrid, tx, ty, this.scanX, this.scanY);
                 if (path.length > 0) {
                     dungeon.stairsOK = true;
-                    this.explore(this.scanX, this.scanY, path);
+                    if(!this.isTravelling && !this.isFollowingPath && !this.isResting) this.explore(this.scanX, this.scanY, path);
                 } else {
                     dungeon.stairsOK = false;
                 }
@@ -458,6 +460,8 @@ game.Hero = me.ObjectEntity.extend({
         this.pos = new me.Vector2d(-32, 9 * 32);
         this.target = new me.Vector2d(this.pos.x + (32 * 3), this.pos.y);
         this.init(this.pos.x, this.pos.y, { name: "hero", image: "hero" });
+        var ftc = me.game.world.getEntityByProp("name", "FloatyTextContainer")[0];
+        ftc.clear();
         me.game.reset();
         me.levelDirector.loadLevel("basedungeon");
         me.game.world.addChild(new game.Dungeon());

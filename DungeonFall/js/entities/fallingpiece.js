@@ -11,7 +11,7 @@ game.FallingPiece = me.ObjectContainer.extend({
         this.parent();
 
         // persistent across level change
-        this.isPersistent = true;
+        //this.isPersistent = true;
 
         // non collidable
         this.collidable = false;
@@ -49,7 +49,7 @@ game.FallingPiece = me.ObjectContainer.extend({
                 this.guideSprites[1][x][y] = new me.AnimationSheet(x * 32, y * 32, me.loader.getImage("placeholder"), 32, 32);
                 this.guideSprites[1][x][y].setOpacity(0);
                 this.guideSprites[1][x][y].animationpause = true;
-                this.guideSprites[1][x][y].z = 2;
+                this.guideSprites[1][x][y].z = 1;
                 this.guideSprites[1][x][y].floating = true;
                 this.addChild(this.guideSprites[1][x][y]);
             }

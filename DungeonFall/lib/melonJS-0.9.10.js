@@ -5344,7 +5344,7 @@ window.me = window.me || {};
             // delete all children
             for ( var i = this.children.length, obj; i--, obj = this.children[i];) {
                 // don't remove it if a persistent object
-                if ( !obj.isPersistent ) {
+                if ( !obj.isPersistent) {
                     this.removeChild(obj);
                 }   
             }
