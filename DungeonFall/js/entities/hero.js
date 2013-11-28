@@ -165,7 +165,7 @@ game.Hero = me.ObjectEntity.extend({
                 this.statsTick = me.timer.getTime();
                 if (this.HP < this.HPMax) {
                     this.HP+= (this.HPMax/20);
-                    game.HUD.addFloatyText(new me.Vector2d((this.pos.x + 3) + Math.floor(Math.random() * 16), this.pos.y), "1", "green");
+                    game.HUD.addFloatyText(new me.Vector2d((this.pos.x + 3) + Math.floor(Math.random() * 16), this.pos.y), (this.HPMax / 20), "green");
                     
 
                 }

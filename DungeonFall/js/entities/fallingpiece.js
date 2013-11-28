@@ -109,7 +109,7 @@ game.FallingPiece = me.ObjectContainer.extend({
             }
 
 
-            // Chests
+            // Chests, weapoin racks and potions!
             if (this.counter > 8 && this.chestsCount > 0) {
                 ran = Math.floor(Math.random() * (50 - (game.Level * 2) - dungeon.highestUsedColumn));
                 if (ran < 0) ran = 0;
@@ -119,7 +119,20 @@ game.FallingPiece = me.ObjectContainer.extend({
                            this.Tiles[x][y] = PieceHelper.SpecialPieces[0][y][x];
                         }
                     }
-                    this.Tiles[1][1] = PieceHelper.CHEST_TILE;
+                    var type = Math.floor(Math.random() * 4);
+                    type -= 1;
+                    if (type == -1) type = 0;
+                    switch (type) {
+                        case 0:
+                            this.Tiles[1][1] = PieceHelper.CHEST_TILE;
+                            break;
+                        case 1:
+                            this.Tiles[1][1] = PieceHelper.WEAPON_TILE;
+                            break;
+                        case 2:
+                            this.Tiles[1][1] = PieceHelper.POTION_TILE;
+                            break;
+                    }
                     this.chestsCount--;
                 }
             }
@@ -144,9 +157,13 @@ game.FallingPiece = me.ObjectContainer.extend({
                         
 
                         // Mobs (placement will be determined by hero's level i guess)
-                        ran = Math.floor(Math.random() * (20 - (game.Level/2)));
-                        if (ran == 0 && !mobPlaced) {
-                            this.Tiles[x][y] = PieceHelper.MIN_MOB_TILE;
+                        ran = Math.floor(Math.random() * (20 - (game.Level/3)));
+                        if (ran <= 0 && !mobPlaced) {
+                            var type = 0;
+                            if (game.Level >= 2 && Math.floor(Math.random() * 5) == 0) type = 1;
+                            if (game.Level >= 3 && Math.floor(Math.random() * 10) == 0) type = 2;
+                            if (game.Level >= 4 && Math.floor(Math.random() * 15) == 0) type = 3;
+                            this.Tiles[x][y] = PieceHelper.MIN_MOB_TILE + type;
                             mobPlaced = true;
                         }
 
@@ -228,7 +245,21 @@ game.FallingPiece = me.ObjectContainer.extend({
 
                 // Chest spawn
                 if (this.Tiles[x][y] == PieceHelper.CHEST_TILE) {
-                    var newChest = new game.Chest(tx * 32, ty * 32, { });
+                    var newChest = new game.Chest(tx * 32, ty * 32, { type: 0 });
+                    me.game.add(newChest);
+                    dungeon.Tiles[tx][ty] = 0;
+                }
+
+                // Weapon spawn
+                if (this.Tiles[x][y] == PieceHelper.WEAPON_TILE) {
+                    var newChest = new game.Chest(tx * 32, ty * 32, { type: 1 });
+                    me.game.add(newChest);
+                    dungeon.Tiles[tx][ty] = 0;
+                }
+
+                // Potion spawn
+                if (this.Tiles[x][y] == PieceHelper.POTION_TILE) {
+                    var newChest = new game.Chest(tx * 32, ty * 32, { type: 2 });
                     me.game.add(newChest);
                     dungeon.Tiles[tx][ty] = 0;
                 }

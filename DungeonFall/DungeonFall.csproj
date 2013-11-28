@@ -77,6 +77,9 @@
     <Content Include="data\img\hud\potion.png" />
     <Content Include="data\img\hud\sword.png" />
     <Content Include="data\img\mob0.png" />
+    <Content Include="data\img\mob1.png" />
+    <Content Include="data\img\mob2.png" />
+    <Content Include="data\img\mob3.png" />
     <Content Include="data\img\placeholder.png" />
     <Content Include="data\img\textfont.png" />
     <Content Include="data\img\tiles.png" />

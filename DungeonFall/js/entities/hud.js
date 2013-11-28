@@ -89,7 +89,7 @@ game.HUD.Container = me.ObjectContainer.extend({
             for (var i = 0; i < 8; i++) {
                 if (hero.Items[i] > 0) {
                     this.itemSprites[i].alpha = 1;
-                    this.itemfontgreen.draw(context, "+" + hero.Items[i], this.itemSprites[i].pos.x+14, this.itemSprites[i].pos.y+12);
+                    this.itemfontgreen.draw(context, "+" + hero.Items[i], this.itemSprites[i].pos.x+15, this.itemSprites[i].pos.y-10);
 
                 }
 
@@ -178,7 +178,7 @@ game.HUD.TextWindow = me.ObjectContainer.extend({
     init: function (x, y) {
         this.parent(x,y,620,128);
 
-        this.font = new me.BitmapFont("textfont", { x: 21, y:22 }, 0.8);
+        this.font = new me.BitmapFont("textfont", { x: 21, y:22 }, 0.6);
         this.font.alignText = "top";
 
         this.floating = true;

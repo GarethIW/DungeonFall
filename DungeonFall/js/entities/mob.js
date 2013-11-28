@@ -1,6 +1,6 @@
 /// <reference path="../../lib/melonJS-0.9.10.js" />
 
-game.MobList = ["a Spider"];
+game.MobList = ["a Spider","a Skeleton","an Eyeball","a Thief"];
 game.Mob = me.ObjectEntity.extend({
 
     Type: 0,

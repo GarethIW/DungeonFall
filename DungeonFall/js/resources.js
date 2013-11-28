@@ -2,6 +2,9 @@ game.resources = [
     { name: "hero", type: "image", src: "data/img/hero.png" },
 
     { name: "mob0", type: "image", src: "data/img/mob0.png" },
+    { name: "mob1", type: "image", src: "data/img/mob1.png" },
+    { name: "mob2", type: "image", src: "data/img/mob2.png" },
+    { name: "mob3", type: "image", src: "data/img/mob3.png" },
 
     { name: "chest", type: "image", src: "data/img/chest.png" },
 
