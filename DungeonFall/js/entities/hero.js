@@ -40,9 +40,12 @@ game.Hero = me.ObjectEntity.extend({
     HPMax: 10,
     HP: 10,
 
+    isGameOver: false,
+    gameOverTime: 0,
+
     Items: new Array(8),
 
-    ItemNames: [ "a better helm", "a better chestplate", "better leggings", "better bracers", "better gloves", "better boots", "a better sword", "a potion" ],
+    ItemNames: [ "a better helm", "a better chestplate", "better leggings", "better bracers", "better gloves", "better boots", "a better sword", "a health potion" ],
 
     init: function (x, y, settings) {
         // call the constructor
@@ -98,6 +101,8 @@ game.Hero = me.ObjectEntity.extend({
 
         this.z = 4;
 
+        this.isGameOver = false;
+
         game.HUD.addLine("Hero has arrived on dungeon floor "+ game.Level);
     },
 
@@ -136,7 +141,15 @@ game.Hero = me.ObjectEntity.extend({
         this.SRMax = this.SRBase;
         for (var i = 0; i < 6; i++) this.SRMax += this.Items[i];
         this.DRMax += this.Items[6];
+        this.attackCooldownTarget = 2000 - (this.Items[6] * 50);
         /////
+
+        if (this.isGameOver) {
+            if (me.timer.getTime() > this.gameOverTime + 3000) {
+                me.game.viewport.fadeIn("#000000", 1000, this.gameOver.bind(this));
+            }
+            return true;
+        }
 
         if (this.isTravelling) {
             if (this.target.x > this.pos.x) this.pos.x+=this.walkSpeed;
@@ -157,6 +170,22 @@ game.Hero = me.ObjectEntity.extend({
                 this.statsTick = me.timer.getTime() + 2000;
                 this.attack(mob);
             }
+        }
+
+        if (this.isInCombat && this.HP < (this.HPMax * 0.8) && this.Items[7] > 0) {
+            this.Items[7]--;
+            this.HP = this.HPMax;
+            game.HUD.addLine("Hero drinks a health potion!");
+        }
+
+        if (this.HP <= 0) {
+            this.HP = 0;
+            this.isGameOver = true;
+            this.gameOverTime = me.timer.getTime();
+            game.HUD.addFloatyText(new me.Vector2d((this.pos.x - 50) + Math.floor(Math.random() * 16), this.pos.y - 16), "Dedz :(", "red", 3);
+            game.HUD.addLine("");
+            game.HUD.addLine("Hero dies!");
+            game.HUD.addLine("--- Game Over ---");
         }
 
         if (!this.isInCombat) {
@@ -221,10 +250,21 @@ game.Hero = me.ObjectEntity.extend({
             var cy = Math.floor(chest.pos.y / 32);
             if (tx == cx && ty == cy && !chest.isOpen) {
                 chest.open();
-                game.HUD.addLine("Hero opened a chest");
-                var ran = Math.floor(Math.random() * 6);
-                this.Items[ran]++;
-                game.HUD.addLine("...and found " + this.ItemNames[ran] + "!");
+                if (chest.Type == 0) {
+                    game.HUD.addLine("Hero opened a chest");
+                    var ran = Math.floor(Math.random() * 6);
+                    this.Items[ran]++;
+                    game.HUD.addLine("...and found " + this.ItemNames[ran] + "!");
+                }
+                if (chest.Type == 1) {
+                    game.HUD.addLine("Hero found a weapon rack");
+                    this.Items[6]++;
+                    game.HUD.addLine("...and took " + this.ItemNames[6] + "!");
+                }
+                if (chest.Type == 2) {
+                    this.Items[7]++;
+                    game.HUD.addLine("Hero found " + this.ItemNames[7] + "!");
+                }
             }
         }
 
@@ -305,7 +345,12 @@ game.Hero = me.ObjectEntity.extend({
             } else {
                 if (!this.isTravelling && !this.isFollowingPath && dungeon.isComplete && me.game.world.getEntityByProp("name", "mob").length == 0) {
                     if (!dungeon.stairsOK) {
+                        game.HUD.addLine("");
                         game.HUD.addLine("Hero is trapped!");
+                        game.HUD.addLine("--- Game Over ---");
+                        game.HUD.addFloatyText(new me.Vector2d((this.pos.x - 50) + Math.floor(Math.random() * 16), this.pos.y - 16), "Trapped!", "red", 3);
+                        this.isGameOver = true;
+                        this.gameOverTime = me.timer.getTime();
                     }
                 }
             }
@@ -332,8 +377,8 @@ game.Hero = me.ObjectEntity.extend({
         if (this.XP >= this.XPTNL) {
             this.Level++;
             this.LastXPTNL = this.XPTNL;
+            this.XP -= this.XPTNL;
             this.XPTNL = 50 + (50 * this.Level);
-            this.XP = 0;
             this.HPMax += this.Level;
             this.HP = this.HPMax;
             game.HUD.addFloatyText(new me.Vector2d((this.pos.x - 50) + Math.floor(Math.random() * 16), this.pos.y - 16), "Level Up!", "gold", 2);
@@ -352,6 +397,8 @@ game.Hero = me.ObjectEntity.extend({
     },
 
     attackedBy: function (attacker) {
+        if (this.isGameOver) return;
+
         if (!this.isInCombat) {
             this.attackCooldown = me.timer.getTime() + (Math.random() * 2000);
             game.HUD.addFloatyText(new me.Vector2d((this.pos.x - 40) + Math.floor(Math.random() * 16), this.pos.y - 16), "Stunned!", "red");
@@ -468,6 +515,40 @@ game.Hero = me.ObjectEntity.extend({
         me.game.world.addChild(new game.FallingPiece());
         me.game.viewport.fadeOut("#000000", 1000);
         
+    },
+
+    gameOver: function () {
+        this.Level= 1;
+        this.XP= 0;
+        this.XPTNL= 50;
+        this.LastXPTNL= 0;
+        this.DRMin= 0;
+        this.DRMax= 3;
+        this.DRBase=3;
+        this.SRMin= 0;
+        this.SRMax= 2;
+        this.SRBase= 2;
+        this.HPMax= 10;
+        this.HP= 10;
+        game.Level = 1;
+        for (var i = 0; i < 7; i++) game.HUD.addLine("");
+        game.HUD.addLine("Welcome to DungeonFall");
+        game.HUD.addLine("By Gareth Williams");
+        game.HUD.addLine("");
+        game.HUD.addLine("Arrows - Move/Rotate Piece");
+        game.HUD.addLine("Z - Fast Drop");
+        game.HUD.addLine("X - Instant Drop");
+        game.HUD.addLine("");
+        this.pos = new me.Vector2d(-32, 9 * 32);
+        this.target = new me.Vector2d(this.pos.x + (32 * 3), this.pos.y);
+        this.init(this.pos.x, this.pos.y, { name: "hero", image: "hero" });
+        var ftc = me.game.world.getEntityByProp("name", "FloatyTextContainer")[0];
+        ftc.clear();
+        me.game.reset();
+        me.levelDirector.loadLevel("basedungeon");
+        me.game.world.addChild(new game.Dungeon());
+        me.game.world.addChild(new game.FallingPiece());
+        me.game.viewport.fadeOut("#000000", 1000);
     }
 
 });

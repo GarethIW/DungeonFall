@@ -59,7 +59,9 @@
     <Folder Include="data\sfx\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="data\img\chest.png" />
+    <Content Include="data\img\chest0.png" />
+    <Content Include="data\img\chest1.png" />
+    <Content Include="data\img\chest2.png" />
     <Content Include="data\img\floatfont-blue.png" />
     <Content Include="data\img\floatfont-gold.png" />
     <Content Include="data\img\floatfont-green.png" />

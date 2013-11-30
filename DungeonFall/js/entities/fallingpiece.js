@@ -109,7 +109,7 @@ game.FallingPiece = me.ObjectContainer.extend({
             }
 
 
-            // Chests, weapoin racks and potions!
+            // Chests, weapon racks and potions!
             if (this.counter > 8 && this.chestsCount > 0) {
                 ran = Math.floor(Math.random() * (50 - (game.Level * 2) - dungeon.highestUsedColumn));
                 if (ran < 0) ran = 0;
